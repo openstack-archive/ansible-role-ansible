@@ -1,0 +1,61 @@
+---
+- job:
+    name: ansible-role-ansible-base
+    parent: unittests
+    pre-run: tests/playbooks/pre.yaml
+    run: tests/playbooks/run.yaml
+    post-run:
+      - tests/playbooks/post.yaml
+      - tests/collect-logs.yaml
+    roles:
+      - zuul: openstack/ansible-role-ansible
+
+# Testing for ansible_install_method: pip
+- job:
+    name: ansible-role-ansible
+    parent: ansible-role-ansible-base
+
+- job:
+    name: ansible-role-ansible-fedora-latest
+    parent: ansible-role-ansible
+    nodeset: fedora-latest
+
+- job:
+    name: ansible-role-ansible-ubuntu-bionic
+    parent: ansible-role-ansible
+    nodeset: ubuntu-bionic
+
+# Testing for ansible_install_method: git
+- job:
+    name: ansible-role-ansible-src
+    parent: ansible-role-ansible-base
+    vars:
+      ansible_install_method: git
+
+- job:
+    name: ansible-role-ansible-src-fedora-latest
+    parent: ansible-role-ansible-src
+    nodeset: fedora-latest
+
+- job:
+    name: ansible-role-ansible-src-ubuntu-bionic
+    parent: ansible-role-ansible-src
+    nodeset: ubuntu-bionic
+
+- project:
+    check:
+      jobs:
+        - ansible-role-ansible-fedora-latest
+        - ansible-role-ansible-ubuntu-bionic
+        - ansible-role-ansible-src-fedora-latest
+        - ansible-role-ansible-src-ubuntu-bionic
+        - tox-linters
+        - windmill-tox-molecule
+    gate:
+      jobs:
+        - ansible-role-ansible-fedora-latest
+        - ansible-role-ansible-ubuntu-bionic
+        - ansible-role-ansible-src-fedora-latest
+        - ansible-role-ansible-src-ubuntu-bionic
+        - tox-linters
+        - windmill-tox-molecule
