@@ -13,4 +13,6 @@
 # under the License.
 ---
 __ansible_build_depends:
+  - gcc
+  - libffi-dev
   - libssl-dev
