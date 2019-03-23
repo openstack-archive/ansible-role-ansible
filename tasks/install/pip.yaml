@@ -21,3 +21,14 @@
     version: "{{ ansible_pip_version|default(omit) }}"
     virtualenv_python: "{{ ansible_pip_virtualenv_python|default(omit) }}"
     virtualenv: "{{ ansible_pip_virtualenv|default(omit) }}"
+
+- name: Symlink ansible virtualenv
+  become: true
+  file:
+    src: "{{ ansible_pip_virtualenv }}"
+    dest: "{{ ansible_pip_virtualenv_symlink }}"
+    state: link
+  when:
+    - ansible_pip_virtualenv is defined
+    - ansible_pip_virtualenv_symlink is defined
+    - ansible_pip_virtualenv != ansible_pip_virtualenv_symlink
