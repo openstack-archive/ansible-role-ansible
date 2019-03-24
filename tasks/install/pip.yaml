@@ -22,11 +22,27 @@
     virtualenv_python: "{{ ansible_pip_virtualenv_python|default(omit) }}"
     virtualenv: "{{ ansible_pip_virtualenv|default(omit) }}"
 
+- name: Stat ansible_pip_virtualenv_symlink
+  stat:
+    path: "{{ ansible_pip_virtualenv_symlink | dirname }}"
+  register: r
+  no_log: true
+  when: ansible_pip_virtualenv_symlink is defined
+
+- name: Create ansible_pip_virtualenv_symlink directory
+  become: true
+  file:
+    state: directory
+    path: "{{ ansible_pip_virtualenv_symlink | dirname }}"
+  when:
+    - ansible_pip_virtualenv_symlink is defined
+    - not r.stat.exists
+
 - name: Symlink ansible virtualenv
   become: true
   file:
-    src: "{{ ansible_pip_virtualenv }}"
     dest: "{{ ansible_pip_virtualenv_symlink }}"
+    src: "{{ ansible_pip_virtualenv }}"
     state: link
   when:
     - ansible_pip_virtualenv is defined
